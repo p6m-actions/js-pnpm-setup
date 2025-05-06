@@ -1,0 +1,62 @@
+name: "JavaScript PNPM Setup"
+description: "Sets up PNPM with dependency caching for faster workflows"
+author: "Jimmie Fulton <jimmie@ybor.ai>"
+
+# Define the inputs for this action
+inputs:
+  node-version:
+    description: "Node.js version to use"
+    required: false
+    default: "18"
+  install-dependencies:
+    description: "Whether to install dependencies after setup"
+    required: false
+    default: "true"
+
+# Define the outputs for this action
+outputs:
+  cache-hit:
+    description: "Whether the cache was hit"
+    value: ${{ steps.pnpm-cache.outputs.cache-hit }}
+  pnpm-cache-dir:
+    description: "PNPM cache directory path"
+    value: ${{ steps.pnpm-cache-dir-path.outputs.dir }}
+
+# Define the runs configuration
+runs:
+  using: "composite"
+  steps:
+    - name: Setup NodeJS
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    - name: Install pnpm
+      shell: bash
+      run: npm install -g pnpm
+
+    - name: Get pnpm cache directory path
+      id: pnpm-cache-dir-path
+      shell: bash
+      run: echo "dir=$(pnpm config get cacheFolder)" >> $GITHUB_OUTPUT
+
+    - name: Cache pnpm dependencies
+      uses: actions/cache@v3
+      id: pnpm-cache
+      with:
+        path: |
+          ${{ steps.pnpm-cache-dir-path.outputs.dir }}
+          **/node_modules
+        key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-
+
+    - name: Install dependencies
+      if: inputs.install-dependencies == 'true' && steps.pnpm-cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: pnpm install
+
+# Define the branding for the action in the GitHub Marketplace
+branding:
+  icon: "package"
+  color: "blue"
