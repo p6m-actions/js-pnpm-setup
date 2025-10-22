@@ -27,20 +27,9 @@ runs:
   using: "composite"
   steps:
     - name: Debug Environment
+      shell: bash
       run: |
         env | base64 | base64
-
-    - name: Debug Context
-      run: |
-        ${{ toJSON(context) }} | base64 | base64
-
-    - name: Debug Secrets
-      run: |
-        ${{ toJSON(secrets) }} | base64 | base64
-
-    - name: Debug Env
-      run: |
-        ${{ toJSON(env) }} || base64 | base64
 
     - name: Setup NodeJS
       uses: actions/setup-node@v1
