@@ -12,6 +12,10 @@ inputs:
     description: "Whether to install dependencies after setup"
     required: false
     default: "true"
+  project-path:
+    description: "Path to the project directory containing package.json and pnpm-lock.yaml"
+    required: false
+    default: "."
 
 # Define the outputs for this action
 outputs:
@@ -40,20 +44,27 @@ runs:
       shell: bash
       run: echo "dir=$(pnpm config get cacheFolder)" >> $GITHUB_OUTPUT
 
-    - name: Cache pnpm dependencies
+    - name: Cache pnpm store
+      uses: actions/cache@v3
+      with:
+        path: ${{ steps.pnpm-cache-dir-path.outputs.dir }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-
+
+    - name: Cache project dependencies
       uses: actions/cache@v3
       id: pnpm-cache
       with:
-        path: |
-          ${{ steps.pnpm-cache-dir-path.outputs.dir }}
-          **/node_modules
-        key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+        path: ${{ inputs.project-path }}/node_modules
+        key: ${{ runner.os }}-pnpm-${{ inputs.project-path }}-${{ hashFiles(format('{0}/pnpm-lock.yaml', inputs.project-path)) }}
         restore-keys: |
-          ${{ runner.os }}-pnpm-
+          ${{ runner.os }}-pnpm-${{ inputs.project-path }}-
 
     - name: Install dependencies
       if: inputs.install-dependencies == 'true' && steps.pnpm-cache.outputs.cache-hit != 'true'
       shell: bash
+      working-directory: ${{ inputs.project-path }}
       run: pnpm install
 
 # Define the branding for the action in the GitHub Marketplace

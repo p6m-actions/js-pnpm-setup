@@ -26,10 +26,11 @@ steps:
 
 ## Inputs
 
-| Input                  | Description                     | Required | Default |
-| ---------------------- | ------------------------------- | -------- | ------- |
-| `node-version`         | Node.js version to use          | No       | '18'    |
-| `install-dependencies` | Whether to install dependencies | No       | 'true'  |
+| Input                  | Description                                                        | Required | Default |
+| ---------------------- | ------------------------------------------------------------------ | -------- | ------- |
+| `node-version`         | Node.js version to use                                             | No       | `'18'`  |
+| `install-dependencies` | Whether to install dependencies                                    | No       | `'true'`|
+| `project-path`         | Path to the project directory containing package.json and pnpm-lock.yaml | No       | `'.'`   |
 
 ## Outputs
 
@@ -83,4 +84,44 @@ steps:
     run: |
       echo "Cache hit: ${{ steps.pnpm-setup.outputs.cache-hit }}"
       echo "PNPM cache directory: ${{ steps.pnpm-setup.outputs.pnpm-cache-dir }}"
+```
+
+### Project in a Subdirectory
+
+For repositories where the project is not at the root:
+
+```yaml
+steps:
+  - uses: actions/checkout@v3
+  - uses: p6m-actions/js-pnpm-setup@v1
+    with:
+      project-path: "packages/my-site"
+  - name: Build
+    working-directory: packages/my-site
+    run: pnpm build
+```
+
+### Multiple Projects in One Repository
+
+For monorepos or repositories with multiple independent projects, call the action separately for each project. Each project gets its own isolated cache:
+
+```yaml
+steps:
+  - uses: actions/checkout@v3
+
+  # Setup and build frontend
+  - uses: p6m-actions/js-pnpm-setup@v1
+    with:
+      project-path: "packages/frontend"
+  - name: Build frontend
+    working-directory: packages/frontend
+    run: pnpm build
+
+  # Setup and build backend
+  - uses: p6m-actions/js-pnpm-setup@v1
+    with:
+      project-path: "packages/backend"
+  - name: Build backend
+    working-directory: packages/backend
+    run: pnpm build
 ```
