@@ -28,9 +28,9 @@ steps:
 
 | Input                  | Description                                                        | Required | Default |
 | ---------------------- | ------------------------------------------------------------------ | -------- | ------- |
-| `node-version`         | Node.js version to use                                             | No       | `'18'`  |
-| `install-dependencies` | Whether to install dependencies                                    | No       | `'true'`|
-| `project-path`         | Path to the project directory containing package.json and pnpm-lock.yaml | No       | `'.'`   |
+| `node-version`         | Node.js version to use                                             | No       | `18`    |
+| `install-dependencies` | Whether to install dependencies                                    | No       | `true`  |
+| `project-path`         | Relative path to the project directory (must contain `package.json` and `pnpm-lock.yaml`) | No       | `.`     |
 
 ## Outputs
 
@@ -88,7 +88,7 @@ steps:
 
 ### Project in a Subdirectory
 
-For repositories where the project is not at the root:
+For repositories where the project is not at the root. The `project-path` must be a relative path within the repository and must contain both `package.json` and `pnpm-lock.yaml`:
 
 ```yaml
 steps:
@@ -103,7 +103,9 @@ steps:
 
 ### Multiple Projects in One Repository
 
-For monorepos or repositories with multiple independent projects, call the action separately for each project. Each project gets its own isolated cache:
+For repositories with multiple independent PNPM projects (not pnpm workspaces using `pnpm-workspace.yaml`), call the action separately for each project. Each project gets its own isolated cache.
+
+> **Note:** This feature is designed for repositories containing multiple separate PNPM projects, each with their own `package.json` and `pnpm-lock.yaml`. For pnpm workspaces, run `pnpm install` from the workspace root instead.
 
 ```yaml
 steps:

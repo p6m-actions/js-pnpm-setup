@@ -13,7 +13,7 @@ inputs:
     required: false
     default: "true"
   project-path:
-    description: "Path to the project directory containing package.json and pnpm-lock.yaml"
+    description: "Relative path to the project directory containing package.json and pnpm-lock.yaml (must not contain '..' or be absolute)"
     required: false
     default: "."
 
