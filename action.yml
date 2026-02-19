@@ -57,7 +57,7 @@ runs:
       id: pnpm-cache
       with:
         path: ${{ inputs.project-path }}/node_modules
-        key: ${{ runner.os }}-pnpm-${{ inputs.project-path }}-${{ hashFiles(format('{0}/pnpm-lock.yaml', inputs.project-path)) }}
+        key: ${{ runner.os }}-pnpm-${{ inputs.project-path }}-${{ hashFiles(format('{0}/pnpm-lock.yaml', inputs.project-path)) }}-${{ hashFiles(format('{0}/package-lock.json', inputs.project-path)) }}
         restore-keys: |
           ${{ runner.os }}-pnpm-${{ inputs.project-path }}-
 
