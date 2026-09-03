@@ -5,9 +5,9 @@ author: "Jimmie Fulton <jimmie@ybor.ai>"
 # Define the inputs for this action
 inputs:
   node-version:
-    description: "Node.js version to use"
+    description: "Node.js version to use. Empty (the default) HONORS THE REPOSITORY: .nvmrc, then .node-version, then package.json engines.node (ranges work), then Node 22 — a retrofit must not impose a toolchain the app never declared (a Next.js 16 app under this action's old hardcoded 18 failed instantly: YP6M-3660)."
     required: false
-    default: "18"
+    default: ""
   install-dependencies:
     description: "Whether to install dependencies after setup"
     required: false
@@ -30,14 +30,49 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - name: Resolve toolchain versions from the repository
+      id: toolchain
+      shell: bash
+      working-directory: ${{ inputs.project-path }}
+      run: |
+        # Node: explicit input > .nvmrc > .node-version > package.json engines.node > 22.
+        node_version="${{ inputs.node-version }}"
+        if [ -z "$node_version" ] && [ -f .nvmrc ]; then
+          node_version=$(tr -d ' \t\r\n' < .nvmrc)
+          echo "Node version from .nvmrc: $node_version"
+        fi
+        if [ -z "$node_version" ] && [ -f .node-version ]; then
+          node_version=$(tr -d ' \t\r\n' < .node-version)
+          echo "Node version from .node-version: $node_version"
+        fi
+        if [ -z "$node_version" ] && [ -f package.json ]; then
+          node_version=$(jq -r '.engines.node // empty' package.json)
+          [ -n "$node_version" ] && echo "Node version from package.json engines.node: $node_version"
+        fi
+        if [ -z "$node_version" ]; then
+          node_version="22"
+          echo "No declaration found — defaulting to Node $node_version"
+        fi
+        echo "node-version=$node_version" >> $GITHUB_OUTPUT
+
+        # pnpm: package.json packageManager (the app's own pin, what corepack would use) > latest.
+        pnpm_spec="pnpm"
+        if [ -f package.json ]; then
+          pm=$(jq -r '.packageManager // empty' package.json)
+          case "$pm" in
+            pnpm@*) pnpm_spec="$pm"; echo "pnpm version from package.json packageManager: $pm" ;;
+          esac
+        fi
+        echo "pnpm-spec=$pnpm_spec" >> $GITHUB_OUTPUT
+
     - name: Setup NodeJS
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v4
       with:
-        node-version: ${{ inputs.node-version }}
+        node-version: ${{ steps.toolchain.outputs.node-version }}
 
     - name: Install pnpm
       shell: bash
-      run: npm install -g pnpm
+      run: npm install -g "${{ steps.toolchain.outputs.pnpm-spec }}"
 
     - name: Get pnpm cache directory path
       id: pnpm-cache-dir-path
