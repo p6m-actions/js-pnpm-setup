@@ -16,7 +16,7 @@ steps:
   - name: Setup PNPM with caching
     uses: p6m-actions/js-pnpm-setup@v1
     with:
-      node-version: "18"
+      node-version: "22"
       install-dependencies: "true"
 
   # Now you can run PNPM commands
@@ -28,7 +28,7 @@ steps:
 
 | Input                  | Description                                                        | Required | Default |
 | ---------------------- | ------------------------------------------------------------------ | -------- | ------- |
-| `node-version`         | Node.js version to use                                             | No       | `18`    |
+| `node-version`         | Node.js version to use. Empty honors `.nvmrc`, `.node-version`, then `package.json` `engines.node`, then falls back to `22` | No       | `""`    |
 | `install-dependencies` | Whether to install dependencies                                    | No       | `true`  |
 | `project-path`         | Relative path to the project directory (must contain `package.json` and `pnpm-lock.yaml`) | No       | `.`     |
 
@@ -57,9 +57,13 @@ steps:
   - uses: actions/checkout@v3
   - uses: p6m-actions/js-pnpm-setup@v1
     with:
-      node-version: "20"
+      node-version: "22"
   - run: pnpm build
 ```
+
+> **Security floor:** use Node 22.23.4 or later (24.22.1+ / 26.12.1+ on those lines). Node 20 and older are affected by the 2026-10-21 Node security release. A major tag such as `"22"` resolves to the latest 22.x on the runner. A version pinned in `.nvmrc` or `engines.node` overrides the fallback, so keep it at or above the floor.
+>
+> This action uses `actions/setup-node@v5` and `actions/cache@v5` (Node 24 runtime). Self-hosted runners need Actions runner 2.327.1 or later.
 
 ### Setup Without Installing Dependencies
 
