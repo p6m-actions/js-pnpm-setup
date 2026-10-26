@@ -66,7 +66,7 @@ runs:
         echo "pnpm-spec=$pnpm_spec" >> $GITHUB_OUTPUT
 
     - name: Setup NodeJS
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v5
       with:
         node-version: ${{ steps.toolchain.outputs.node-version }}
 
@@ -80,7 +80,7 @@ runs:
       run: echo "dir=$(pnpm config get cacheFolder)" >> $GITHUB_OUTPUT
 
     - name: Cache pnpm store
-      uses: actions/cache@v3
+      uses: actions/cache@v5
       with:
         path: ${{ steps.pnpm-cache-dir-path.outputs.dir }}
         key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -88,7 +88,7 @@ runs:
           ${{ runner.os }}-pnpm-store-
 
     - name: Cache project dependencies
-      uses: actions/cache@v3
+      uses: actions/cache@v5
       id: pnpm-cache
       with:
         path: ${{ inputs.project-path }}/node_modules
