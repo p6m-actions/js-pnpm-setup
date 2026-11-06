@@ -69,6 +69,11 @@ runs:
       uses: actions/setup-node@v5
       with:
         node-version: ${{ steps.toolchain.outputs.node-version }}
+        # setup-node v5 auto-enables caching when package.json has a packageManager
+        # field and resolves the package manager binary before pnpm is installed
+        # (next step), failing with "Unable to locate executable file: pnpm".
+        # The pnpm store and node_modules are cached explicitly below.
+        package-manager-cache: false
 
     - name: Install pnpm
       shell: bash
